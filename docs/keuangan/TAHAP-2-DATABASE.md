@@ -52,6 +52,11 @@ Tidak ada RPC yang dapat membuat admin pertama dari pengguna non-admin. Ini dise
 - Model akses jamaah, kebutuhan akses nomor telepon, storage receipt, serta retensi audit perlu review final.
 - Tidak ada Supabase project yang dihubungkan/diubah, tidak ada branch dibuat, dan tidak ada deployment.
 
+## Tes kontrak database
+- `supabase/tests/001_finance_schema.test.sql` berisi 18 pemeriksaan pgTAP untuk RLS, privilege langsung, EXECUTE RPC, constraint saldo awal, dan jumlah policy.
+- File tes belum dijalankan karena migrasi belum diterapkan dan alat PostgreSQL/pgTAP lokal belum tersedia.
+- Jalankan hanya setelah persetujuan migrasi pada staging kosong; tes menggunakan `BEGIN`/`ROLLBACK` dan tidak membuat data finansial.
+
 ## Skenario pengujian staging
 1. Admin pertama hanya bisa dibuat lewat prosedur operator; pengguna non-admin gagal memanggil semua RPC admin.
 2. Buat periode: akun SAPI dan KAS_UMUM dibuat bersamaan dengan saldo Rp0; tahun duplikat ditolak.
