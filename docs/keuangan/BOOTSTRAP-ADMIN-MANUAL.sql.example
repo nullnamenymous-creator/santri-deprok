@@ -1,0 +1,14 @@
+-- EXAMPLE ONLY. NEVER execute in production.
+-- Use only after a separately approved, empty staging database is selected.
+-- Create the Auth user first in the Supabase dashboard, then replace the UUID below.
+-- Review the target project and record operator approval before execution.
+begin;
+insert into public.sd_user_roles(user_id, role, account_id, created_by)
+values (
+  'REPLACE_WITH_STAGING_AUTH_USER_UUID'::uuid,
+  'admin',
+  null,
+  'REPLACE_WITH_STAGING_AUTH_USER_UUID'::uuid
+);
+commit;
+-- The role audit trigger should record the bootstrap row. Verify it after execution.
