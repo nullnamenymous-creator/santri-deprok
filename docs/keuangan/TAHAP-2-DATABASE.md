@@ -26,12 +26,14 @@ Status: DRAFT STATIS. Migrasi belum diterapkan ke database mana pun.
 2. Klien tidak diberi UPDATE/DELETE langsung pada buku besar.
 3. Composite foreign key memastikan akun dan periode pada transaksi/peserta cocok.
 4. Akun dikunci selama konfirmasi/reversal untuk serialisasi pemeriksaan saldo.
-5. Transaksi terkonfirmasi immutable; koreksi memakai counter-entry yang terhubung ke sumber.
-6. Counter-entry hanya dapat dibuat oleh alur reversal yang sah; koreksi berantai ditolak.
-7. Audit log tidak bisa diubah/dihapus melalui jalur SQL biasa.
-8. Fungsi SECURITY DEFINER memakai search_path kosong; akses EXECUTE dicabut dari PUBLIC lalu diberikan secara eksplisit.
-9. Profil jamaah dibuat melalui RPC admin, bukan INSERT bebas oleh klien.
-10. Tidak ada kredensial, token, atau nilai rahasia di file migrasi.
+5. Trigger INSERT mengunci akun dan membaca periode dengan row lock agar INSERT tidak berlomba dengan penutupan periode.
+6. Perubahan role admin diserialisasi memakai transaction-scoped advisory lock agar dua pencabutan bersamaan tidak menghapus admin terakhir.
+7. Transaksi terkonfirmasi immutable; koreksi memakai counter-entry yang terhubung ke sumber.
+8. Counter-entry hanya dapat dibuat oleh alur reversal yang sah; koreksi berantai ditolak.
+9. Audit log tidak bisa diubah/dihapus melalui jalur SQL biasa; detail audit masih perlu review lebih lanjut agar cukup untuk audit operasional.
+10. Fungsi SECURITY DEFINER memakai search_path kosong; akses EXECUTE dicabut dari PUBLIC lalu diberikan secara eksplisit.
+11. Profil jamaah dibuat melalui RPC admin, bukan INSERT bebas oleh klien.
+12. Tidak ada kredensial, token, atau nilai rahasia di file migrasi.
 
 ## Bootstrap admin pertama
 Tidak ada RPC yang dapat membuat admin pertama dari pengguna non-admin. Ini disengaja agar pengguna biasa tidak dapat menaikkan role sendiri.

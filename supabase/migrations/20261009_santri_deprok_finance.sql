@@ -289,6 +289,10 @@ begin
   if p_role='bendahara_sapi' and v_type<>'SAPI' then raise exception 'Bendahara sapi hanya boleh pada akun SAPI.'; end if;
   if p_role='bendahara_kas' and v_type<>'KAS_UMUM' then raise exception 'Bendahara kas hanya boleh pada akun KAS_UMUM.'; end if;
  end if;
+ -- Serialize every admin-role change so concurrent revocations cannot remove the last admin.
+ if p_role='admin' then
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('sd_admin_role_guard',0));
+ end if;
  if p_role='admin' and not p_enabled
    and exists(select 1 from public.sd_user_roles target where target.user_id=p_user_id and target.role='admin' and target.account_id is null)
    and (select count(*) from public.sd_user_roles r where r.role='admin' and r.account_id is null)<=1 then
@@ -406,9 +410,11 @@ begin
  else
   raise exception 'Transaksi baru tidak boleh langsung terkonfirmasi.';
  end if;
- select * into v_account from public.sd_fund_accounts where id=NEW.account_id;
+ -- Lock account then period in the same order used by period close/confirmation.
+ -- This prevents an insert racing with period closure after checking OPEN status.
+ select * into v_account from public.sd_fund_accounts where id=NEW.account_id for update;
  if v_account.id is null then raise exception 'Akun tidak ditemukan.'; end if;
- select * into v_period from public.sd_haul_periods where id=NEW.period_id;
+ select * into v_period from public.sd_haul_periods where id=NEW.period_id for share;
  if v_period.id is null or v_account.period_id<>NEW.period_id or not v_account.is_active or v_period.status<>'OPEN' then
   raise exception 'Akun/periode tidak cocok atau tidak aktif.';
  end if;
